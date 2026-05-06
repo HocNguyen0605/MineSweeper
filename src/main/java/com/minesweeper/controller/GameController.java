@@ -28,7 +28,7 @@ public class GameController {
         this.gameState = GameState.IDLE;
 
         registerViewHandlers();
-        newGame();
+        registerMenuHandlers();
     }
 
     // ── Setup ─────────────────────────────────────────────────
@@ -40,7 +40,14 @@ public class GameController {
         mainView.getHeaderView().setOnReset(this::reset);
         mainView.getHeaderView().setOnDifficultyChange(this::setDifficulty);
     }
-
+    // Trong GameController constructor
+    private void registerMenuHandlers() {
+        mainView.getMenuView().setOnDifficultySelected(difficulty -> {
+            this.difficulty = difficulty;
+            mainView.showGame(); // Hiện bàn cờ
+            newGame();           // Gọi logic tạo board của bạn
+        });
+    }
     private void bindProperties() {
         // Bind timer
         mainView.getHeaderView().bindTimer(timer.elapsedSecondsProperty());
@@ -54,6 +61,8 @@ public class GameController {
     // ── Game Management ───────────────────────────────────────
 
     public void newGame() {
+        System.out.println("Đang tạo game với độ khó: " + difficulty);
+        System.out.println("Board size: " + board.getRows() + "x" + board.getCols());
         board = BoardFactory.createBoard(difficulty);   // Factory pattern
         gameState = GameState.IDLE;
         timer.reset();
