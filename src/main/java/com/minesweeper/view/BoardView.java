@@ -1,6 +1,7 @@
 package com.minesweeper.view;
 
 import com.minesweeper.model.Cell;
+import javafx.geometry.Pos;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 
@@ -54,6 +55,7 @@ public class BoardView {
      */
     public BoardView() {
         grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
         // TODO: grid.setHgap(2); grid.setVgap(2)
         // TODO: grid.getStyleClass().add("board-grid")
     }
