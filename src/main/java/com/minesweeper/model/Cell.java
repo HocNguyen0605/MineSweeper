@@ -11,13 +11,19 @@ public class Cell {
 
     // ── Fields ────────────────────────────────────────────────
 
-    /** Chỉ số hàng của ô này trên bàn cờ */
+    /**
+     * Chỉ số hàng của ô này trên bàn cờ
+     */
     private final int row;
 
-    /** Chỉ số cột của ô này trên bàn cờ */
+    /**
+     * Chỉ số cột của ô này trên bàn cờ
+     */
     private final int col;
 
-    /** True nếu ô này là mìn */
+    /**
+     * True nếu ô này là mìn
+     */
     private boolean isMine;
 
     /**
@@ -27,7 +33,9 @@ public class Cell {
      */
     private int adjacentMines;
 
-    /** Trạng thái hiển thị hiện tại của ô — FR-02, FR-09 */
+    /**
+     * Trạng thái hiển thị hiện tại của ô — FR-02, FR-09
+     */
     private CellState state;
 
     // ── Constructor ───────────────────────────────────────────
@@ -68,6 +76,11 @@ public class Cell {
      */
     public void toggleFlag() {
         // TODO: implement toggle logic
+        if (state == CellState.HIDDEN) {
+            state = CellState.FLAGGED;
+        } else if (state == CellState.FLAGGED) {
+            state = CellState.HIDDEN;
+        } //REVEALED thì không làm gì cả
     }
 
     /**
@@ -92,42 +105,58 @@ public class Cell {
 
     // ── Queries ───────────────────────────────────────────────
 
-    /** @return trạng thái hiển thị hiện tại của ô */
+    /**
+     * @return trạng thái hiển thị hiện tại của ô
+     */
     public CellState getState() {
         return state;
     }
 
-    /** @return true nếu ô đang được cắm cờ — UR-04 */
+    /**
+     * @return true nếu ô đang được cắm cờ — UR-04
+     */
     public boolean isFlagged() {
         return state == CellState.FLAGGED;
     }
 
-    /** @return true nếu ô đã được mở */
+    /**
+     * @return true nếu ô đã được mở
+     */
     public boolean isRevealed() {
         return state == CellState.REVEALED;
     }
 
-    /** @return true nếu ô là mìn */
+    /**
+     * @return true nếu ô là mìn
+     */
     public boolean isMine() {
         return isMine;
     }
 
-    /** @return true nếu ô là ô trống (không phải mìn, 0 mìn xung quanh) — FR-14 */
+    /**
+     * @return true nếu ô là ô trống (không phải mìn, 0 mìn xung quanh) — FR-14
+     */
     public boolean isBlank() {
         return !isMine && adjacentMines == 0;
     }
 
-    /** @return số mìn trong 8 ô xung quanh — FR-13 */
+    /**
+     * @return số mìn trong 8 ô xung quanh — FR-13
+     */
     public int getAdjacentMines() {
         return adjacentMines;
     }
 
-    /** @return chỉ số hàng */
+    /**
+     * @return chỉ số hàng
+     */
     public int getRow() {
         return row;
     }
 
-    /** @return chỉ số cột */
+    /**
+     * @return chỉ số cột
+     */
     public int getCol() {
         return col;
     }
