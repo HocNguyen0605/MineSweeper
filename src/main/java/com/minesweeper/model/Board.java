@@ -229,6 +229,17 @@ public class Board {
      */
     public void toggleFlag(int row, int col) {
         // TODO: gọi cell.toggleFlag(), cập nhật flagCount (+1 hoặc -1)
+        if (!inBounds(row, col)) return;
+        Cell cell = cells[row][col];
+        if (!cell.isRevealed()){
+            boolean wasFlagged = cell.isFlagged();
+            cell.toggleFlag();
+            if (!wasFlagged && cell.isFlagged()){
+                flagCount.set(flagCount.get() + 1);
+            }else if (wasFlagged && !cell.isFlagged()){
+                flagCount.set(flagCount.get() - 1);
+            }
+        }
     }
 
     // ── Game Status ───────────────────────────────────────────

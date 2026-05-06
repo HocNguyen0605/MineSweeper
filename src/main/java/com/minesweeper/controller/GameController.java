@@ -1,9 +1,6 @@
 package com.minesweeper.controller;
 
-import com.minesweeper.model.Board;
-import com.minesweeper.model.GameState;
-import com.minesweeper.model.GameTimer;
-import com.minesweeper.model.ScoreRecord;
+import com.minesweeper.model.*;
 import com.minesweeper.view.MainView;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
