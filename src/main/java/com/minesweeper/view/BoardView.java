@@ -101,13 +101,17 @@ public class BoardView {
      */
     private void attachMouseHandlers(CellView cv) {
         cv.setOnMouseClicked(e -> {
-            // TODO:
-            //   if e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2
-            //       → onChord.accept(cv.getRow(), cv.getCol())
-            //   else if e.getButton() == MouseButton.PRIMARY
-            //       → onLeftClick.accept(cv.getRow(), cv.getCol())
-            //   else if e.getButton() == MouseButton.SECONDARY
-            //       → onRightClick.accept(cv.getRow(), cv.getCol())
+            MouseButton button = e.getButton();
+            int row = cv.getRow();
+            int col = cv.getCol();
+
+            if (button == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                if (onChord != null) onChord.accept(row, col);
+            } else if (button == MouseButton.PRIMARY) {
+                if (onLeftClick != null) onLeftClick.accept(row, col);
+            } else if (button == MouseButton.SECONDARY) {
+                if (onRightClick != null) onRightClick.accept(row, col);
+            }
         });
     }
 
@@ -122,7 +126,7 @@ public class BoardView {
      * @param cell trạng thái model mới của ô
      */
     public void updateCell(int row, int col, Cell cell) {
-        // TODO: cellViews[row][col].render(cell)
+        cellViews[row][col].render(cell);
     }
 
     /**
@@ -134,7 +138,15 @@ public class BoardView {
      * @param explodedCol cột của ô mìn vừa nổ (-1 nếu không có)
      */
     public void revealAllMines(int explodedRow, int explodedCol) {
-        // TODO: duyệt cellViews, với ô là mìn → showMine(r==explodedRow && c==explodedCol)
+        for (int r = 0; r < cellViews.length; r++) {
+            for (int c = 0; c < cellViews[0].length; c++) {
+                CellView cv = cellViews[r][c];
+                if (cv.getText().equals("💣")) {
+                    boolean exploded = (r == explodedRow && c == explodedCol);
+                    cv.showMine(exploded);
+                }
+            }
+        }
     }
 
     /**
@@ -165,6 +177,7 @@ public class BoardView {
      */
     public void setOnLeftClick(BiConsumer<Integer, Integer> handler) {
         this.onLeftClick = handler;
+        
     }
 
     /**

@@ -102,7 +102,10 @@ public class GameController {
         }
 
         boolean safe = board.revealCell(row, col);
-        mainView.getBoardView().updateCell(row, col, board.getCell(row, col));
+        // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
+        for (int[] pos : board.getLastRevealedPositions()) {
+            mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
+        }
 
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
@@ -139,9 +142,9 @@ public class GameController {
     }
 
     private void handleLose(int explodedRow, int explodedCol) {
+        board.revealAllMines();
         timer.pause();
         gameState = GameState.LOSE;
-        board.revealAllMines();
         mainView.getBoardView().revealAllMines(explodedRow, explodedCol);
         mainView.setDisabled(true);
         mainView.getHeaderView().setResetEmoji("😵");
