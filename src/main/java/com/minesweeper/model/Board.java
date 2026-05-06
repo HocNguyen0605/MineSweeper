@@ -131,7 +131,7 @@ public class Board {
             firstClick = false;
         }
         // Reset danh sách revealed cho lần thao tác này
-        lastRevealedPositions.clear();
+//        lastRevealedPositions.clear();
 
         if (!inBounds(row, col)) return true;
 
@@ -213,10 +213,44 @@ public class Board {
      * @param row hàng
      * @param col cột
      * @return false nếu chording gây nổ mìn, true nếu an toàn
+     * Delta Row: Độ lệch hàng (chạy từ -1, 0, đến 1)
+     * Delta Column: Độ lệch cột (chạy từ -1, 0, đến 1)
+     * Neighbor Row: Chỉ số hàng thực tế của ô lân cận
+     * Neighbor Column: Chỉ số cột thực tế của ô lân cận
      */
     public boolean chord(int row, int col) {
         // TODO: kiểm tra số cờ xung quanh == adjacentMines của ô đó
         // nếu đúng → mở toàn bộ ô HIDDEN xung quanh
+        if (!inBounds(row, col)) return true;
+        Cell cell = cells[row][col];
+        if (!cell.isRevealed() || cell.getAdjacentMines() == 0) return true;
+        int FlaggedAround = 0;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int nr = row + i;
+                int nc = col + j;
+                if (inBounds(nr, nc)){
+                    if (cells[nr][nc].isFlagged()) {
+                        FlaggedAround++;
+                    }
+                }
+            }
+        }
+        if (FlaggedAround == cell.getAdjacentMines()){
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    int nr = row + i;
+                    int nc = col + j;
+                    if (inBounds(nr, nc)){
+                        Cell neighbor = cells[nr][nc];
+                        if (neighbor.getState() == CellState.HIDDEN){
+                            boolean safe = revealCell(nr, nc);
+                            if (!safe) return false;
+                        }
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -252,7 +286,13 @@ public class Board {
      */
     public boolean checkWin() {
         // TODO: đếm số ô chưa mở, so với totalMines
-        return false;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Cell cell = cells[i][j];
+                if (!cell.isMine() && !cell.isRevealed()) return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -332,5 +372,8 @@ public class Board {
      */
     public List<int[]> getLastRevealedPositions() {
         return lastRevealedPositions;
+    }
+    public void clearLastRevealed() {
+        lastRevealedPositions.clear();
     }
 }

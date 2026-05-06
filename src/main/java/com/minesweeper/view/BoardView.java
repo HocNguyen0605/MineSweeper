@@ -1,5 +1,6 @@
 package com.minesweeper.view;
 
+import com.minesweeper.model.Board;
 import com.minesweeper.model.Cell;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
@@ -103,7 +104,6 @@ public class BoardView {
             MouseButton button = e.getButton();
             int row = cv.getRow();
             int col = cv.getCol();
-
             if (button == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 if (onChord != null) onChord.accept(row, col);
             } else if (button == MouseButton.PRIMARY) {
@@ -136,13 +136,17 @@ public class BoardView {
      * @param explodedRow hàng của ô mìn vừa nổ (-1 nếu không có)
      * @param explodedCol cột của ô mìn vừa nổ (-1 nếu không có)
      */
-    public void revealAllMines(int explodedRow, int explodedCol) {
+    public void revealAllMines(Board board, int explodedRow, int explodedCol) {
         for (int r = 0; r < cellViews.length; r++) {
             for (int c = 0; c < cellViews[0].length; c++) {
-                CellView cv = cellViews[r][c];
-                if (cv.getText().equals("💣")) {
+                Cell cell = board.getCell(r, c);
+                if (cell.isMine()) {
                     boolean exploded = (r == explodedRow && c == explodedCol);
-                    cv.showMine(exploded);
+                    // Gọi render hoặc showMine trực tiếp dựa trên dữ liệu thật từ Model
+                    cellViews[r][c].render(cell);
+                    if (exploded) {
+                        cellViews[r][c].showMine(true); // Ép ô nổ hiện màu đỏ
+                    }
                 }
             }
         }
