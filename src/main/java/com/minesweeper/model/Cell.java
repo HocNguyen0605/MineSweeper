@@ -55,7 +55,9 @@ public class Cell {
      * UR-01, FR-08
      */
     public void reveal() {
-        // TODO: chuyển state sang REVEALED nếu state == HIDDEN
+        if (state == CellState.HIDDEN) {
+            state = CellState.REVEALED;
+        }
     }
 
     /**
