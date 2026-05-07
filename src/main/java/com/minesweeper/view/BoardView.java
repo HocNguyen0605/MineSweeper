@@ -1,9 +1,9 @@
 package com.minesweeper.view;
 
+import com.minesweeper.model.Board;
 import com.minesweeper.model.Cell;
 import javafx.geometry.Pos;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.util.function.BiConsumer;
@@ -57,6 +57,8 @@ public class BoardView {
     public BoardView() {
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
+        // TODO: grid.setHgap(2); grid.setVgap(2)
+        // TODO: grid.getStyleClass().add("board-grid")
     }
 
     // ── Build ─────────────────────────────────────────────────
@@ -104,7 +106,6 @@ public class BoardView {
             MouseButton button = e.getButton();
             int row = cv.getRow();
             int col = cv.getCol();
-
             if (button == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 if (onChord != null) onChord.accept(row, col);
             } else if (button == MouseButton.PRIMARY) {
@@ -114,6 +115,7 @@ public class BoardView {
             }
         });
     }
+
     // ── Update ────────────────────────────────────────────────
 
     /**
@@ -125,7 +127,8 @@ public class BoardView {
      * @param cell trạng thái model mới của ô
      */
     public void updateCell(int row, int col, Cell cell) {
-            cellViews[row][col].render(cell);    }
+        cellViews[row][col].render(cell);
+    }
 
     /**
      * Lật ngửa toàn bộ mìn — gọi khi người chơi thua.
@@ -135,16 +138,21 @@ public class BoardView {
      * @param explodedRow hàng của ô mìn vừa nổ (-1 nếu không có)
      * @param explodedCol cột của ô mìn vừa nổ (-1 nếu không có)
      */
-    public void revealAllMines(int explodedRow, int explodedCol) {
+    public void revealAllMines(Board board, int explodedRow, int explodedCol) {
         for (int r = 0; r < cellViews.length; r++) {
             for (int c = 0; c < cellViews[0].length; c++) {
-                CellView cv = cellViews[r][c];
-                if (cv.getText().equals("💣")) {
+                Cell cell = board.getCell(r, c);
+                if (cell.isMine()) {
                     boolean exploded = (r == explodedRow && c == explodedCol);
-                    cv.showMine(exploded);
+                    // Gọi render hoặc showMine trực tiếp dựa trên dữ liệu thật từ Model
+                    cellViews[r][c].render(cell);
+                    if (exploded) {
+                        cellViews[r][c].showMine(true); // Ép ô nổ hiện màu đỏ
+                    }
                 }
             }
-        }    }
+        }
+    }
 
     /**
      * Đặt lại toàn bộ ô về trạng thái HIDDEN.
@@ -174,6 +182,7 @@ public class BoardView {
      */
     public void setOnLeftClick(BiConsumer<Integer, Integer> handler) {
         this.onLeftClick = handler;
+
     }
 
     /**

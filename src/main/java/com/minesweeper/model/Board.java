@@ -1,7 +1,14 @@
 package com.minesweeper.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import java.util.*;
 
@@ -15,6 +22,7 @@ public class Board {
     private boolean firstClick;
     // Danh sách các ô vừa được reveal trong lần gọi revealCell gần nhất
     private List<int[]> lastRevealedPositions = new ArrayList<>();
+
     /**
      * Tạo Board với kích thước và số mìn cho trước.
      * Chưa đặt mìn — đợi đến click đầu tiên.
@@ -28,7 +36,6 @@ public class Board {
         this.cols = cols;
         this.totalMines = totalMines;
         this.firstClick = true;
-        // TODO: khởi tạo mảng cells, tạo Cell tại mỗi vị trí
         this.cells = new Cell[rows][cols];
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -36,17 +43,20 @@ public class Board {
             }
         }
     }
+
     // ── Mine Placement ────────────────────────────────────────
 
     /**
-     * Đặt mìn ngẫu nhiên lên bàn cờ, đảm bảo ô (safeRow, safeCol)
-     * và 8 ô xung quanh nó không bao giờ là mìn.
+     * Đặt mìn ngẫu nhiên trên bàn cờ, đảm bảo ô (safeRow, safeCol) không phải mìn.
+     * Cập nhật adjacentMines cho tất cả ô sau khi đặt mìn xong.
+     * <p>
      * Gọi lần đầu tiên khi người chơi click ô đầu tiên — FR-12.
      *
      * @param safeRow hàng của ô đầu tiên được click
-     * @param safeCol cột của ô đầu tiên được click
+     * @param safeCol cột của ô đầu tiên được clickf
      */
     public void placeMines(int safeRow, int safeCol) {
+
         List<int[]> candidates = new ArrayList<>();
 
         for (int r = 0; r < rows; r++) {
@@ -73,8 +83,9 @@ public class Board {
 
         calculateAdjacentMines();
     }
+
     /**
-     * Tính và gán số mìn xung quanh cho từng ô không phải mìn.
+     * Tính và gán số xung quanh cho từng ô không phải mìn.
      * Gọi một lần sau {@link #placeMines(int, int)} — FR-13.
      */
     private void calculateAdjacentMines() {
@@ -100,7 +111,35 @@ public class Board {
         }
     }
     public boolean revealCell(int row, int col) {
-        // TODO: implement
+        if (firstClick) {
+            placeMines(row, col);
+            firstClick = false;
+        }
+        // Reset danh sách revealed cho lần thao tác này
+//        lastRevealedPositions.clear();
+
+        if (!inBounds(row, col)) return true;
+
+        Cell cell = cells[row][col];
+
+        if (cell.isRevealed() || cell.isFlagged()) return true;
+
+        // Nếu là mìn → reveal và trả về false (người chơi thua)
+        if (cell.isMine()) {
+            cell.reveal();
+            lastRevealedPositions.add(new int[]{row, col});
+            return false;
+        }
+
+        // Bình thường: mở ô
+        cell.reveal();
+        lastRevealedPositions.add(new int[]{row, col});
+
+        // Nếu ô trống (blank), mở rộng vùng bằng flood fill
+        if (cell.isBlank()) {
+            floodFill(row, col);
+        }
+
         return true;
     }
 
@@ -112,7 +151,6 @@ public class Board {
      * @param col cột
      */
     private void floodFill(int row, int col) {
-        // TODO: BFS hoặc DFS mở các ô HIDDEN liền kề chưa phải mìn
         if (!inBounds(row, col)) return;
 
         int startRow = row;
@@ -151,6 +189,7 @@ public class Board {
             }
         }
     }
+
     /**
      * Xử lý Chording: double-click vào ô số đã có đủ cờ xung quanh
      * → tự động mở các ô HIDDEN còn lại xung quanh.
@@ -159,10 +198,44 @@ public class Board {
      * @param row hàng
      * @param col cột
      * @return false nếu chording gây nổ mìn, true nếu an toàn
+     * Delta Row: Độ lệch hàng (chạy từ -1, 0, đến 1)
+     * Delta Column: Độ lệch cột (chạy từ -1, 0, đến 1)
+     * Neighbor Row: Chỉ số hàng thực tế của ô lân cận
+     * Neighbor Column: Chỉ số cột thực tế của ô lân cận
      */
     public boolean chord(int row, int col) {
         // TODO: kiểm tra số cờ xung quanh == adjacentMines của ô đó
-        //       nếu đúng → mở toàn bộ ô HIDDEN xung quanh
+        // nếu đúng → mở toàn bộ ô HIDDEN xung quanh
+        if (!inBounds(row, col)) return true;
+        Cell cell = cells[row][col];
+        if (!cell.isRevealed() || cell.getAdjacentMines() == 0) return true;
+        int FlaggedAround = 0;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int nr = row + i;
+                int nc = col + j;
+                if (inBounds(nr, nc)){
+                    if (cells[nr][nc].isFlagged()) {
+                        FlaggedAround++;
+                    }
+                }
+            }
+        }
+        if (FlaggedAround == cell.getAdjacentMines()){
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    int nr = row + i;
+                    int nc = col + j;
+                    if (inBounds(nr, nc)){
+                        Cell neighbor = cells[nr][nc];
+                        if (neighbor.getState() == CellState.HIDDEN){
+                            boolean safe = revealCell(nr, nc);
+                            if (!safe) return false;
+                        }
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -198,7 +271,13 @@ public class Board {
      */
     public boolean checkWin() {
         // TODO: đếm số ô chưa mở, so với totalMines
-        return false;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Cell cell = cells[i][j];
+                if (!cell.isMine() && !cell.isRevealed()) return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -278,5 +357,8 @@ public class Board {
      */
     public List<int[]> getLastRevealedPositions() {
         return lastRevealedPositions;
+    }
+    public void clearLastRevealed() {
+        lastRevealedPositions.clear();
     }
 }

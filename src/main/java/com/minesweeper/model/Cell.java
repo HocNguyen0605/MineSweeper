@@ -55,9 +55,7 @@ public class Cell {
      * UR-01, FR-08
      */
     public void reveal() {
-        if (this.state == CellState.HIDDEN) {
-            this.state = CellState.REVEALED;
-        }
+        // TODO: chuyển state sang REVEALED nếu state == HIDDEN
     }
 
     /**
@@ -80,7 +78,8 @@ public class Cell {
      * Gọi bởi Board khi khởi tạo mìn — FR-12.
      */
     public void setMine() {
-        this.isMine = true;    }
+        this.isMine = true;
+    }
 
     /**
      * Cập nhật số mìn xung quanh ô.
@@ -96,42 +95,58 @@ public class Cell {
 
     // ── Queries ───────────────────────────────────────────────
 
-    /** @return trạng thái hiển thị hiện tại của ô */
+    /**
+     * @return trạng thái hiển thị hiện tại của ô
+     */
     public CellState getState() {
         return state;
     }
 
-    /** @return true nếu ô đang được cắm cờ — UR-04 */
+    /**
+     * @return true nếu ô đang được cắm cờ — UR-04
+     */
     public boolean isFlagged() {
         return state == CellState.FLAGGED;
     }
 
-    /** @return true nếu ô đã được mở */
+    /**
+     * @return true nếu ô đã được mở
+     */
     public boolean isRevealed() {
         return state == CellState.REVEALED;
     }
 
-    /** @return true nếu ô là mìn */
+    /**
+     * @return true nếu ô là mìn
+     */
     public boolean isMine() {
         return isMine;
     }
 
-    /** @return true nếu ô là ô trống (không phải mìn, 0 mìn xung quanh) — FR-14 */
+    /**
+     * @return true nếu ô là ô trống (không phải mìn, 0 mìn xung quanh) — FR-14
+     */
     public boolean isBlank() {
         return !isMine && adjacentMines == 0;
     }
 
-    /** @return số mìn trong 8 ô xung quanh — FR-13 */
+    /**
+     * @return số mìn trong 8 ô xung quanh — FR-13
+     */
     public int getAdjacentMines() {
         return adjacentMines;
     }
 
-    /** @return chỉ số hàng */
+    /**
+     * @return chỉ số hàng
+     */
     public int getRow() {
         return row;
     }
 
-    /** @return chỉ số cột */
+    /**
+     * @return chỉ số cột
+     */
     public int getCol() {
         return col;
     }

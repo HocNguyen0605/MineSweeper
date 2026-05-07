@@ -1,5 +1,6 @@
 package com.minesweeper.controller;
 
+import com.minesweeper.model.*;
 import com.minesweeper.model.Board;
 import com.minesweeper.model.GameState;
 import com.minesweeper.model.GameTimer;
@@ -72,19 +73,15 @@ public class GameController {
         gameState = GameState.IDLE;
         timer.reset();
 
-        // 3. Build UI dựa trên board mới
         mainView.getBoardView().build(board.getRows(), board.getCols());
-
-        // 4. Bind properties SAU KHI board và UI đã sẵn sàng
         bindProperties();
 
-        // 5. Cập nhật header
         mainView.getHeaderView().setResetEmoji("🙂");
         mainView.getHeaderView().showBestTime(record.getBestTime(difficulty));
         mainView.setDisabled(false);
     }
+
     public void reset() {
-        System.out.println("Game đã được reset");
         newGame();
     }
 
@@ -130,6 +127,7 @@ public class GameController {
         if (gameState == GameState.PAUSED
                 || gameState == GameState.WIN
                 || gameState == GameState.LOSE) return;
+        board.getLastRevealedPositions().clear();
 
         if (gameState == GameState.IDLE) {
             timer.start();
@@ -137,6 +135,8 @@ public class GameController {
         }
 
         boolean safe = board.revealCell(row, col);
+        // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
+        updateChangedCells();
         mainView.getBoardView().updateCell(row, col, board.getCell(row, col));
         // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
         for (int[] pos : board.getLastRevealedPositions()) {
@@ -146,6 +146,7 @@ public class GameController {
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
     }
+
     public void onRightClick(int row, int col) {
         if (gameState != GameState.PLAYING) return;
         board.toggleFlag(row, col);
@@ -154,8 +155,10 @@ public class GameController {
 
     public void onChord(int row, int col) {
         if (gameState != GameState.PLAYING) return;
+        board.getLastRevealedPositions().clear();
         boolean safe = board.chord(row, col);
         // TODO: cập nhật lại các ô xung quanh trên View
+        updateChangedCells();
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
     }
@@ -180,10 +183,14 @@ public class GameController {
         board.revealAllMines();
         timer.pause();
         gameState = GameState.LOSE;
-        board.revealAllMines();
-        mainView.getBoardView().revealAllMines(explodedRow, explodedCol);
+        mainView.getBoardView().revealAllMines(board, explodedRow, explodedCol);
         mainView.setDisabled(true);
         mainView.getHeaderView().setResetEmoji("😵");
         mainView.showResult(false);
+    }
+    private void updateChangedCells() {
+        for (int[] pos : board.getLastRevealedPositions()) {
+            mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
+        }
     }
 }
