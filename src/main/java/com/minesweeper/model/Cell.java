@@ -11,19 +11,13 @@ public class Cell {
 
     // ── Fields ────────────────────────────────────────────────
 
-    /**
-     * Chỉ số hàng của ô này trên bàn cờ
-     */
+    /** Chỉ số hàng của ô này trên bàn cờ */
     private final int row;
 
-    /**
-     * Chỉ số cột của ô này trên bàn cờ
-     */
+    /** Chỉ số cột của ô này trên bàn cờ */
     private final int col;
 
-    /**
-     * True nếu ô này là mìn
-     */
+    /** True nếu ô này là mìn */
     private boolean isMine;
 
     /**
@@ -33,9 +27,7 @@ public class Cell {
      */
     private int adjacentMines;
 
-    /**
-     * Trạng thái hiển thị hiện tại của ô — FR-02, FR-09
-     */
+    /** Trạng thái hiển thị hiện tại của ô — FR-02, FR-09 */
     private CellState state;
 
     // ── Constructor ───────────────────────────────────────────
@@ -63,8 +55,8 @@ public class Cell {
      * UR-01, FR-08
      */
     public void reveal() {
-        if (this.state == CellState.HIDDEN) {
-            this.state = CellState.REVEALED;
+        if (state == CellState.HIDDEN) {
+            state = CellState.REVEALED;
         }
     }
 

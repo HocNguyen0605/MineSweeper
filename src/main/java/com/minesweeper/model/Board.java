@@ -10,6 +10,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import java.util.*;
+
 public class Board {
 
     private Cell[][] cells;
@@ -108,23 +110,6 @@ public class Board {
             }
         }
     }
-
-    // ── Board Interaction ─────────────────────────────────────
-
-    /**
-     * Xử lý thao tác mở ô tại (row, col).
-     * <ul>
-     * <li>Nếu là click đầu tiên → gọi {@link #placeMines(int, int)} trước —
-     * FR-12</li>
-     * <li>Không làm gì nếu ô đã REVEALED hoặc FLAGGED — UR-04, FR-10</li>
-     * <li>Nếu là mìn → trả về false (GameController xử lý thua) — FR-17</li>
-     * <li>Nếu ô trống → gọi {@link #floodFill(int, int)} — FR-14</li>
-     * </ul>
-     *
-     * @param row hàng
-     * @param col cột
-     * @return false nếu người chơi vừa mở trúng mìn, true nếu an toàn
-     */
     public boolean revealCell(int row, int col) {
         if (firstClick) {
             placeMines(row, col);
@@ -168,35 +153,32 @@ public class Board {
     private void floodFill(int row, int col) {
         if (!inBounds(row, col)) return;
 
-        int startRow = row;
-        int startCol = col;
-
         Deque<int[]> toVisit = new ArrayDeque<>();
-        toVisit.push(new int[]{startRow, startCol});
+
+        // Reveal ô gốc trước rồi mới push
+        cells[row][col].reveal();
+        lastRevealedPositions.add(new int[]{row, col});
+        toVisit.push(new int[]{row, col});
 
         while (!toVisit.isEmpty()) {
             int[] position = toVisit.pop();
             int currentRow = position[0];
             int currentCol = position[1];
 
-            // Duyệt 8 ô xung quanh (currentRow, currentCol)
-            // Nếu ô xung quanh là HIDDEN và không phải mìn → mở nó
-            // Nếu ô vừa mở là blank → thêm vào stack để tiếp tục mở xung quanh
             for (int deltaRow = -1; deltaRow <= 1; deltaRow++) {
                 for (int deltaCol = -1; deltaCol <= 1; deltaCol++) {
+                    if (deltaRow == 0 && deltaCol == 0) continue; // bỏ qua chính nó
+
                     int neighborRow = currentRow + deltaRow;
                     int neighborCol = currentCol + deltaCol;
                     if (!inBounds(neighborRow, neighborCol)) continue;
 
                     Cell neighbor = cells[neighborRow][neighborCol];
-                    // Bỏ qua ô đã mở, có cờ hoặc là mìn
                     if (neighbor.isRevealed() || neighbor.isFlagged() || neighbor.isMine()) continue;
 
-                    // Mở ô
                     neighbor.reveal();
                     lastRevealedPositions.add(new int[]{neighborRow, neighborCol});
 
-                    // Nếu ô vừa mở là blank (0 adjacent), thêm vào stack để mở tiếp xung quanh
                     if (neighbor.isBlank()) {
                         toVisit.push(new int[]{neighborRow, neighborCol});
                     }

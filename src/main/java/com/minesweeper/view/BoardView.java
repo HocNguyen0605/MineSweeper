@@ -182,7 +182,7 @@ public class BoardView {
      */
     public void setOnLeftClick(BiConsumer<Integer, Integer> handler) {
         this.onLeftClick = handler;
-        
+
     }
 
     /**
