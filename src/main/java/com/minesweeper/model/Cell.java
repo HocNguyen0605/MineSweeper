@@ -55,7 +55,9 @@ public class Cell {
      * UR-01, FR-08
      */
     public void reveal() {
-        // TODO: chuyển state sang REVEALED nếu state == HIDDEN
+        if (this.state == CellState.HIDDEN) {
+            this.state = CellState.REVEALED;
+        }
     }
 
     /**
@@ -66,6 +68,11 @@ public class Cell {
      */
     public void toggleFlag() {
         // TODO: implement toggle logic
+        if (state == CellState.HIDDEN) {
+            state = CellState.FLAGGED;
+        } else if (state == CellState.FLAGGED) {
+            state = CellState.HIDDEN;
+        } //REVEALED thì không làm gì cả
     }
 
     /**
@@ -73,8 +80,7 @@ public class Cell {
      * Gọi bởi Board khi khởi tạo mìn — FR-12.
      */
     public void setMine() {
-        // TODO: set isMine = true
-    }
+        this.isMine = true;    }
 
     /**
      * Cập nhật số mìn xung quanh ô.
@@ -83,7 +89,9 @@ public class Cell {
      * @param count số mìn từ 0 đến 8
      */
     public void setAdjacentMines(int count) {
-        // TODO: validate và gán adjacentMines
+        if (count < 0) count = 0;
+        if (count > 8) count = 8;
+        this.adjacentMines = count;
     }
 
     // ── Queries ───────────────────────────────────────────────

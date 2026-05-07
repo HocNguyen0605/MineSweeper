@@ -4,6 +4,7 @@ import com.minesweeper.model.Board;
 import com.minesweeper.model.GameState;
 import com.minesweeper.model.GameTimer;
 import com.minesweeper.model.ScoreRecord;
+import com.minesweeper.model.*;
 import com.minesweeper.view.MainView;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -137,11 +138,14 @@ public class GameController {
 
         boolean safe = board.revealCell(row, col);
         mainView.getBoardView().updateCell(row, col, board.getCell(row, col));
+        // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
+        for (int[] pos : board.getLastRevealedPositions()) {
+            mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
+        }
 
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
     }
-
     public void onRightClick(int row, int col) {
         if (gameState != GameState.PLAYING) return;
         board.toggleFlag(row, col);
@@ -173,6 +177,7 @@ public class GameController {
     }
 
     private void handleLose(int explodedRow, int explodedCol) {
+        board.revealAllMines();
         timer.pause();
         gameState = GameState.LOSE;
         board.revealAllMines();
