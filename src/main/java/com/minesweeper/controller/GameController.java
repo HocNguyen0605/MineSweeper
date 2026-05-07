@@ -101,6 +101,7 @@ public class GameController {
         if (gameState == GameState.PAUSED
                 || gameState == GameState.WIN
                 || gameState == GameState.LOSE) return;
+        board.getLastRevealedPositions().clear();
 
         if (gameState == GameState.IDLE) {
             timer.start();
@@ -109,9 +110,7 @@ public class GameController {
 
         boolean safe = board.revealCell(row, col);
         // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
-        for (int[] pos : board.getLastRevealedPositions()) {
-            mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
-        }
+        updateChangedCells();
 
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
@@ -125,8 +124,10 @@ public class GameController {
 
     public void onChord(int row, int col) {
         if (gameState != GameState.PLAYING) return;
+        board.getLastRevealedPositions().clear();
         boolean safe = board.chord(row, col);
         // TODO: cập nhật lại các ô xung quanh trên View
+        updateChangedCells();
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
     }
@@ -151,9 +152,14 @@ public class GameController {
         board.revealAllMines();
         timer.pause();
         gameState = GameState.LOSE;
-        mainView.getBoardView().revealAllMines(explodedRow, explodedCol);
+        mainView.getBoardView().revealAllMines(board, explodedRow, explodedCol);
         mainView.setDisabled(true);
         mainView.getHeaderView().setResetEmoji("😵");
         mainView.showResult(false);
+    }
+    private void updateChangedCells() {
+        for (int[] pos : board.getLastRevealedPositions()) {
+            mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
+        }
     }
 }
