@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import java.util.*;
 
 public class Board {
 
