@@ -16,7 +16,16 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
