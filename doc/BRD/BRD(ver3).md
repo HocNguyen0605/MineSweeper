@@ -82,6 +82,9 @@ thông qua nền tảng Java (JVM), bao gồm đầy đủ logic trò chơi, gia
 
 ### 1.5. Luồng nghiệp vụ
 
+<img width="609" height="1542" alt="image" src="https://github.com/user-attachments/assets/e9bb8a5e-1f68-4b82-a0b7-98807386d16a" />
+
+
 ## 2. Đối tượng người dùng & User Stories
 
 ### 2.1. Người chơi giải trí (Casual Players)
