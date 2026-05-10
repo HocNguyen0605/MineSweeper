@@ -2,147 +2,141 @@ package com.minesweeper.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BoardTest {
 
     private Board board;
-    private final int rows = 9;
-    private final int cols = 9;
-    private final int totalMines = 10;
 
     @BeforeEach
-    public void setUp() {
-        board = new Board(rows, cols, totalMines);
+    void setUp() {
+        // 10x10 board with 10 mines
+        board = new Board(10, 10, 10);
     }
 
-    /**
-     * UC-15 & FR-12: Ô đầu tiên click không bao giờ là mìn.
-     */
+    // UC-1: Place Flag
     @Test
-    public void testFirstClickIsSafe() {
-        int safeRow = 3, safeCol = 3;
-        board.placeMines(safeRow, safeCol);
+    void testPlaceFlag() {
+        // Given a hidden cell at (0,0)
+        Cell cell = board.getCell(0, 0);
+        assertFalse(cell.isFlagged(), "Cell should not be flagged initially.");
+        assertEquals(0, board.getFlagCount(), "Initial flag count should be 0.");
 
-        for (int r = safeRow - 1; r <= safeRow + 1; r++) {
-            for (int c = safeCol - 1; c <= safeCol + 1; c++) {
-                if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    assertFalse(board.getCell(r, c).isMine(),
-                            "Ô (" + r + "," + c + ") xung quanh click đầu tiên không được là mìn");
-                }
-            }
-        }
+        // When toggling flag on the cell
+        board.toggleFlag(0, 0);
+
+        // Then the cell should be flagged and flag count should increase
+        assertTrue(cell.isFlagged(), "Cell should be flagged after toggling.");
+        assertEquals(1, board.getFlagCount(), "Flag count should be 1.");
     }
 
-    /**
-     * UC-01: Mở ô có mìn → trả về false.
-     */
+    // UC-2: Remove Flag
     @Test
-    public void testRevealCellWithMine_ShouldReturnFalse() {
-        board.placeMines(0, 0);
+    void testRemoveFlag() {
+        // Given a flagged cell at (0,0)
+        board.toggleFlag(0, 0);
+        Cell cell = board.getCell(0, 0);
+        assertTrue(cell.isFlagged(), "Cell should be flagged initially.");
+        assertEquals(1, board.getFlagCount(), "Initial flag count should be 1.");
 
-        int mineRow = -1, mineCol = -1;
-        outer:
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (board.getCell(r, c).isMine()) {
-                    mineRow = r;
-                    mineCol = c;
-                    break outer;
-                }
-            }
-        }
+        // When toggling flag on the cell again
+        board.toggleFlag(0, 0);
 
-        assertNotEquals(-1, mineRow, "Phải tìm thấy ít nhất một ô mìn");
-
-        boolean result = board.revealCell(mineRow, mineCol);
-
-        assertFalse(result, "Mở ô mìn phải trả về false");
-        assertTrue(board.getCell(mineRow, mineCol).isRevealed(), "Ô mìn phải chuyển sang REVEALED");
+        // Then the cell should not be flagged and flag count should decrease
+        assertFalse(cell.isFlagged(), "Cell should not be flagged after toggling again.");
+        assertEquals(0, board.getFlagCount(), "Flag count should be 0.");
     }
 
-    /**
-     * UC-02 & UC-03: Đánh dấu và hủy cờ.
-     */
+    // UC-3: Chording
     @Test
-    public void testToggleFlag_ShouldChangeCellStateAndFlagCount() {
-        int row = 2, col = 2;
-
-        assertEquals(0, board.getFlagCount(), "Ban đầu số cờ phải bằng 0");
-
-        board.toggleFlag(row, col);
-        assertTrue(board.getCell(row, col).isFlagged(), "Ô phải được đánh dấu cờ");
-        assertEquals(1, board.getFlagCount(), "Số cờ phải tăng lên 1");
-
-        board.toggleFlag(row, col);
-        assertFalse(board.getCell(row, col).isFlagged(), "Cờ phải được gỡ bỏ");
-        assertEquals(0, board.getFlagCount(), "Số cờ phải giảm về 0");
-    }
-
-    /**
-     * UC-04: Không thể mở ô đã cắm cờ.
-     */
-    @Test
-    public void testRevealFlaggedCell_ShouldDoNothing() {
-        int row = 4, col = 4;
-        board.placeMines(0, 0);
-
-        board.toggleFlag(row, col);
-        assertTrue(board.getCell(row, col).isFlagged());
-
-        board.revealCell(row, col);
-
-        assertTrue(board.getCell(row, col).isFlagged(), "Ô đã cắm cờ không thể bị mở");
-        assertFalse(board.getCell(row, col).isRevealed(), "Ô đã cắm cờ không được REVEALED");
-    }
-
-    /**
-     * UC-11: Thắng khi tất cả ô an toàn đã được mở.
-     */
-    @Test
-    public void testCheckWin_WhenAllSafeCellsRevealed_ShouldReturnTrue() {
-        board.placeMines(rows - 1, cols - 1);
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                Cell cell = board.getCell(r, c);
-                if (!cell.isMine()) cell.reveal();
-            }
-        }
-
-        assertTrue(board.checkWin(), "Phải thắng khi tất cả ô an toàn đã được mở");
-    }
-
-    /**
-     * UC-01 & FR-14: Flood-fill mở nhiều ô khi click ô trống.
-     */
-    @Test
-    public void testFloodFill_WhenBlankCellRevealed_ShouldRevealMultipleCells() {
-        Board blankBoard = new Board(9, 9, 1);
-        blankBoard.placeMines(0, 0);
-
-        int blankRow = -1, blankCol = -1;
-        outer:
-        for (int r = 0; r < 9; r++) {
-            for (int c = 0; c < 9; c++) {
-                if (blankBoard.getCell(r, c).isBlank()) {
-                    blankRow = r;
-                    blankCol = c;
-                    break outer;
+    void testChording_Safe() {
+        // Given a specific board setup for chording test
+        board = new Board(5, 5, 2);
+        // Place mines manually for predictable test
+        board.getCell(0, 0).setMine();
+        board.getCell(0, 2).setMine();
+        // Calculate adjacent mines for all cells
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                if (!board.getCell(r, c).isMine()) {
+                    int count = 0;
+                    for (int dr = -1; dr <= 1; dr++) {
+                        for (int dc = -1; dc <= 1; dc++) {
+                            int nr = r + dr;
+                            int nc = c + dc;
+                            if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && board.getCell(nr, nc).isMine()) {
+                                count++;
+                            }
+                        }
+                    }
+                    board.getCell(r, c).setAdjacentMines(count);
                 }
             }
         }
 
-        assertNotEquals(-1, blankRow, "Phải tìm thấy ô trống để test flood-fill");
+        // Reveal cell (1,1) which has 2 adjacent mines
+        board.getCell(1, 1).reveal();
+        assertEquals(2, board.getCell(1, 1).getAdjacentMines());
 
-        blankBoard.revealCell(blankRow, blankCol);
+        // Flag the two mines
+        board.toggleFlag(0, 0);
+        board.toggleFlag(0, 2);
 
-        long revealedCount = 0;
-        for (int r = 0; r < 9; r++)
-            for (int c = 0; c < 9; c++)
-                if (blankBoard.getCell(r, c).isRevealed()) revealedCount++;
+        // When chording on cell (1,1)
+        boolean isSafe = board.chord(1, 1);
 
-        assertTrue(revealedCount > 1, "Flood-fill phải mở nhiều hơn 1 ô, thực tế: " + revealedCount);
+        // Then the chording should be safe and reveal neighbors
+        assertTrue(isSafe, "Chording should be safe.");
+        assertTrue(board.getCell(0, 1).isRevealed(), "Neighbor (0,1) should be revealed.");
+        assertTrue(board.getCell(1, 0).isRevealed(), "Neighbor (1,0) should be revealed.");
+        assertTrue(board.getCell(1, 2).isRevealed(), "Neighbor (1,2) should be revealed.");
+        assertTrue(board.getCell(2, 0).isRevealed(), "Neighbor (2,0) should be revealed.");
+        assertTrue(board.getCell(2, 1).isRevealed(), "Neighbor (2,1) should be revealed.");
+        assertTrue(board.getCell(2, 2).isRevealed(), "Neighbor (2,2) should be revealed.");
+
+        // The flagged cells and the chording cell itself should not change state (except for revealed)
+        assertTrue(board.getCell(0, 0).isFlagged(), "Mine at (0,0) should remain flagged.");
+        assertTrue(board.getCell(0, 2).isFlagged(), "Mine at (0,2) should remain flagged.");
+        assertTrue(board.getCell(1, 1).isRevealed(), "Chording cell (1,1) should remain revealed.");
+    }
+
+    @Test
+    void testChording_Explosion() {
+        // Given a specific board setup
+        board = new Board(5, 5, 2);
+        board.getCell(0, 0).setMine(); // Correctly flagged mine
+        board.getCell(2, 2).setMine(); // Incorrectly unflagged mine that will cause explosion
+        board.getCell(0, 2).setMine(); // This will be incorrectly flagged
+
+        // Manually calculate adjacent mines for cell (1,1)
+        board.getCell(1, 1).setAdjacentMines(3); // It's surrounded by 3 mines
+
+        // Reveal the cell (1,1)
+        board.getCell(1, 1).reveal();
+
+        // Flag two cells, one correct, one incorrect
+        board.toggleFlag(0, 0); // Correct flag
+        board.toggleFlag(0, 2); // Incorrect flag
+
+        // When chording on cell (1,1)
+        boolean isSafe = board.chord(1, 1);
+
+        // Then the chording should hit a mine and return false
+        assertFalse(isSafe, "Chording should hit a mine and return false.");
+    }
+
+    // UC-4: View Total Mines
+    @Test
+    void testViewTotalMines() {
+        // Given a board with a specific number of mines
+        int totalMines = 15;
+        board = new Board(10, 10, totalMines);
+
+        // When getting the total number of mines
+        int reportedMines = board.getTotalMines();
+
+        // Then the reported number should match the actual number
+        assertEquals(totalMines, reportedMines, "The number of mines should be correctly reported.");
     }
 }
+

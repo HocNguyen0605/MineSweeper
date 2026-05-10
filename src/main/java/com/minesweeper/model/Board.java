@@ -358,3 +358,4 @@ public class Board {
         lastRevealedPositions.clear();
     }
 }
+
