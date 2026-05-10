@@ -31,3 +31,5 @@ installer/
 installer-input/
 .vscode/
 custom-runtime/
+/javafx/
+/META-INF/
