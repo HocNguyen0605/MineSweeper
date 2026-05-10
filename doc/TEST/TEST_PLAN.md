@@ -1,73 +1,100 @@
-# Kế hoạch kiểm thử (Test Plan)
+# Test Plan — Sinh tự động từ thư mục `src/test/java`
 
-## I. KIỂM THỬ CHỨC NĂNG (FUNCTIONAL)
+Tài liệu này tóm tắt các ca kiểm thử hiện có trong thư mục `src/test/java` và mô tả mục đích, kịch bản và kết quả mong đợi của chúng. File này được tạo dựa trên nội dung của hai lớp kiểm thử:
 
-| STT       | Thuộc tính / Kịch bản cần kiểm tra                                           | Kết quả mong đợi (Tiêu chuẩn)                                                                                                 | Đạt | Lỗi |
-|:----------|:-----------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|:----|:----|
-| **UC-01** | **Mở một ô**                                                                 |                                                                                                                               |     |     |
-| 1.1       | Click chuột trái vào một ô chưa mở, không có mìn và không có mìn xung quanh. | Ô được mở ra. Tất cả các ô trống liền kề được tự động mở cho đến khi gặp ô có số.                                             |     |     |
-| 1.2       | Click chuột trái vào một ô chưa mở, không có mìn nhưng có mìn xung quanh.    | Ô được mở ra, hiển thị một con số (từ 1 đến 8) tương ứng với số mìn ở các ô lân cận.                                          |     |     |
-| 1.3       | Click chuột trái vào một ô có mìn.                                           | Trò chơi kết thúc (thua). Vị trí của tất cả các quả mìn khác được hiển thị.                                                   |     |     |
-| **UC-02** | **Đánh dấu cờ**                                                              |                                                                                                                               |     |     |
-| 2.1       | Click chuột phải vào một ô chưa mở.                                          | Ô đó được đánh dấu bằng một lá cờ. Bộ đếm mìn giảm đi 1.                                                                      |     |     |
-| 2.2       | Click chuột phải vào một ô đã được mở.                                       | Không có gì xảy ra.                                                                                                           |     |     |
-| **UC-03** | **Hủy đánh dấu cờ**                                                          |                                                                                                                               |     |     |
-| 3.1       | Click chuột phải vào một ô đã được đánh dấu cờ.                              | Cờ được gỡ bỏ khỏi ô. Bộ đếm mìn tăng lên 1.                                                                                  |     |     |
-| **UC-04** | **Mở ô đã cắm cờ**                                                           |                                                                                                                               |     |     |
-| 4.1       | Click chuột trái vào một ô đã được đánh dấu cờ.                              | Không có gì xảy ra. Ô vẫn được bảo vệ bởi lá cờ.                                                                              |     |     |
-| **UC-05** | **Hiển thị số mìn xung quanh**                                               |                                                                                                                               |     |     |
-| 5.1       | Mở một ô không phải mìn.                                                     | Ô hiển thị một con số chính xác, tương ứng với số lượng mìn trong 8 ô xung quanh nó. Nếu không có mìn xung quanh, ô sẽ trống. |     |     |
-| **UC-06** | **Hiển thị số cờ/mìn còn lại**                                               |                                                                                                                               |     |     |
-| 6.1       | Bắt đầu một ván chơi mới.                                                    | Bộ đếm hiển thị chính xác tổng số mìn của màn chơi.                                                                           |     |     |
-| 6.2       | Đặt một lá cờ.                                                               | Số trên bộ đếm giảm đi 1.                                                                                                     |     |     |
-| 6.3       | Gỡ một lá cờ.                                                                | Số trên bộ đếm tăng lên 1.                                                                                                    |     |     |
-| **UC-07** | **Bắt đầu game mới**                                                         |                                                                                                                               |     |     |
-| 7.1       | Nhấn vào nút "New Game" hoặc menu tương ứng.                                 | Một bàn cờ mới được tạo ra với độ khó đã chọn. Mọi tiến trình của ván cũ bị hủy. Đồng hồ bấm giờ được reset.                  |     |     |
-| **UC-08** | **Tạm dừng game**                                                            |                                                                                                                               |     |     |
-| 8.1       | Nhấn vào nút "Pause" hoặc chức năng tương ứng.                               | Trò chơi tạm dừng. Bàn cờ bị che hoặc vô hiệu hóa. Đồng hồ bấm giờ dừng lại.                                                  |     |     |
-| **UC-09** | **Tiếp tục game**                                                            |                                                                                                                               |     |     |
-| 9.1       | Nhấn vào nút "Resume" hoặc chức năng tương ứng khi game đang tạm dừng.       | Trò chơi tiếp tục. Bàn cờ hoạt động trở lại. Đồng hồ bấm giờ tiếp tục đếm từ thời điểm bị dừng.                               |     |     |
-| **UC-11** | **Thông báo kết quả**                                                        |                                                                                                                               |     |     |
-| 11.1      | Người chơi click phải một ô có mìn.                                          | Một thông báo/cửa sổ hiện ra báo "Thua cuộc!" (Game Over/You Lose).                                                           |     |     |
-| 11.2      | Người chơi mở tất cả các ô không có mìn.                                     | Một thông báo/cửa sổ hiện ra báo "Thắng cuộc!" (You Win). Đồng hồ dừng lại.                                                   |     |     |
-| **UC-12** | **Đồng hồ đếm thời gian**                                                    |                                                                                                                               |     |     |
-| 12.1      | Bắt đầu ván mới.                                                             | Đồng hồ hiển thị "000".                                                                                                       |     |     |
-| 12.2      | Click vào ô đầu tiên.                                                        | Đồng hồ bắt đầu đếm lên theo từng giây.                                                                                       |     |     |
-| 12.3      | Thắng hoặc thua.                                                             | Đồng hồ dừng đếm.                                                                                                             |     |     |
-| **UC-14** | **Sử dụng phím tắt để chơi lại**                                             |                                                                                                                               |     |     |
-| 14.1      | Trong khi đang chơi, nhấn phím F2.                                           | Ván chơi hiện tại được reset. Một bàn cờ mới với cùng cấu hình được tạo ra. Tương đương chức năng "Chơi lại".                 |     |     |
+- `com.minesweeper.model.BoardTest`
+- `com.minesweeper.controller.GameControllerTest`
 
-## II. KIỂM THỬ PHI CHỨC NĂNG (NON-FUNCTIONAL)
+Môi trường thực thi: Java 21, Maven, JUnit 5, Mockito. Chạy toàn bộ kiểm thử:
 
-| STT                                                       | Thuộc tính / Kịch bản cần kiểm tra                                                         | Kết quả mong đợi (Tiêu chuẩn)                                                     | Đạt | Lỗi |
-|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------|:----|:----|
-| **NFR-01**                                                | **Tốc độ phản hồi**                                                                        |                                                                                   |     |     |
-| 1.1                                                       | Click vào một ô bất kỳ.                                                                    | Phản hồi (mở ô, nổ mìn) gần như tức thì, không có độ trễ cảm nhận được (< 100ms). 
-|                                                           |                                                                                            |
-| **NFR-02**                                                | **Hiệu năng mở ô diện rộng**                                                               |                                                                                   |     |     |
-| 2.1 mà, không bị treo, lag hay "Not Responding".          | Click vào một ô trống ở góc bàn cờ lớn (cấp độ Khó) để kích hoạt việc mở nhiều ô cùng lúc. | Hệ thống xử lý mượt                                                               
-|                                                           |                                                                                            |
-| **NFR-03**                                                | **Thời gian khởi động**                                                                    |                                                                                   |     |     |
-| 3.1                                                       | Chạy file thực thi của ứng dụng.                                                           | Ứng dụng khởi động và hiển thị giao diện chính trong vòng dưới 5 giây.            |     |     |
-| **NFR-04**                                                | **Tính ngẫu nhiên của mìn**                                                                |                                                                                   |     |     |
-| 4.1                                                       | Chơi lại nhiều lần ở cùng một cấp độ.                                                      | Vị trí các quả mìn ở mỗi ván mới phải khác nhau và không thể đoán trước           
- được.                                                     |                                                                                            |                                                                                   |
-| **NFR-05**                                                | **Độ chính xác của đồng hồ**                                                               |                                                                                   |     |     |
-| 5.1                                                       | Sử dụng một đồng hồ bấm giờ bên ngoài để so sánh.                                          | Đồng hồ của game chạy chính xác, sai số không vượt quá 1                          
- giây sau vài phút chơi.                                   |                                                                                            |                                                                                   |
-| **NFR-06**                                                | **Màu sắc các con số**                                                                     |                                                                                   |     |     |
-| 6.1                                                       | Mở các ô có số từ 1 đến 8.                                                                 | Mỗi số phải có một màu riêng biệt, dễ phân biệt theo quy ước chung (1-xanh dương, 
- 2-xanh lá, 3-đỏ, v.v.).                                   |                                                                                            |                                                                                   |
-| **NFR-07**                                                | **Hỗ trợ phím tắt**                                                                        |                                                                                   |     |     |
-| 7.1                                                       | Nhấn phím F2.                                                                              | Game được reset thành công.                                                       |     |     |
-| **NFR-09**                                                | **Tương thích độ phân giải**                                                               |                                                                                   |     |     |
-| 9.1                                                       | Chạy game trên màn hình có độ phân giải khác nhau (ví dụ: HD, Full HD).                    | Giao diện không bị vỡ, cắt xén hay                                                
- hiển thị sai lệch. Các thành phần tự động co giãn hợp lý. |                                                                                            |                                                                                   |
-| **NFR-10**                                                | **Tính di động (Portable)**                                                                |                                                                                   |     |     |
-| 10.1                    kỳ bước cài đặt nào.              | Sao chép thư mục/file ứng dụng sang một máy tính khác (đã có JRE).                         | Ứng dụng chạy được ngay mà không cần bất                                          
-|                                                           |                                                                                            |
-| **NFR-11**                                                | **Bảo mật file kỷ lục**                                                                    |                                                                                   |     |     |
-| 11.1                                                      | Tìm và mở file lưu điểm/kỷ lục.                                                            | Nội dung file không phải là dạng text rõ ràng, khó chỉnh sửa thủ công.            |     |     |
-| 11.2                                                      | Sửa đổi file kỷ lục một cách thủ công và khởi động lại game.                               | Game không bị lỗi và có thể ghi đè lại điểm                                       
- không hợp lệ hoặc tự động khôi phục file.                 |                                                                                            |                                                                                   |
+```bash
+mvn test
+```
 
+---
+
+## 1. Mục tiêu chung
+
+- Xác thực logic model (`Board`) — đặt mìn, mở ô, đánh dấu cờ, flood-fill, điều kiện thắng/thua.
+- Xác thực hành vi điều khiển (`GameController`) khi tương tác với `MainView`/`BoardView`/`HeaderView` (sử dụng mocks). Kiểm tra: pause/resume, reset (F2), đổi độ khó, xử lý click trái/phải.
+
+---
+
+## 2. Tóm tắt ca kiểm thử (theo file)
+
+### `BoardTest` (6 ca)
+
+- testFirstClickIsSafe
+  - Mục đích: Sau khi gọi `placeMines(safeRow,safeCol)` ô click đầu và 8 ô xung quanh không chứa mìn.
+  - Kết quả mong đợi: Tất cả ô liên quan `isMine()` = false.
+
+- testRevealCellWithMine_ShouldReturnFalse
+  - Mục đích: Mở một ô có mìn trả về false và ô đó được đánh dấu là revealed.
+  - Kết quả mong đợi: `revealCell(...)` trả về false; ô có `isRevealed()` = true.
+
+- testToggleFlag_ShouldChangeCellStateAndFlagCount
+  - Mục đích: Đánh dấu / gỡ cờ thay đổi trạng thái ô và bộ đếm cờ.
+  - Kết quả mong đợi: `isFlagged()` cập nhật; `getFlagCount()` tăng/giảm tương ứng.
+
+- testRevealFlaggedCell_ShouldDoNothing
+  - Mục đích: Không thể mở ô đã cắm cờ.
+  - Kết quả mong đợi: Ô vẫn flagged và không revealed.
+
+- testCheckWin_WhenAllSafeCellsRevealed_ShouldReturnTrue
+  - Mục đích: Khi tất cả ô an toàn được reveal, `checkWin()` trả về true.
+  - Kết quả mong đợi: `checkWin()` = true.
+
+- testFloodFill_WhenBlankCellRevealed_ShouldRevealMultipleCells
+  - Mục đích: Kiểm tra behavior flood-fill khi reveal ô trống (blank).
+  - Kết quả mong đợi: Số ô revealed > 1.
+
+### `GameControllerTest` (10 ca)
+
+- Các kiểm thử chính (mô tả ngắn):
+  - `testPause_WhenPlaying_ShouldDisableView`: Khi đang chơi, pause sẽ disable view.
+  - `testPause_WhenIdle_ShouldDoNothing`: Pause khi idle không gọi setDisabled(true).
+  - `testResume_WhenPaused_ShouldEnableView`: Resume khi đang pause sẽ enable view.
+  - `testResume_WhenNotPaused_ShouldDoNothing`: Resume khi không pause không gọi setDisabled(false).
+  - `testOnKeyPressed_F2_ShouldCallReset`: Nhấn F2 sẽ gọi reset/newGame (BoardView.build được gọi).
+  - `testOnKeyPressed_OtherKey_ShouldNotReset`: Phím khác không gọi reset.
+  - `testSetDifficulty_Medium_ShouldStartNewGame`: Đổi độ khó (MEDIUM) gọi build cho board view.
+  - `testSetDifficulty_Hard_ShouldStartNewGame`: Đổi độ khó (HARD) gọi build cho board view.
+  - `testOnRightClick_WhenPlaying_ShouldUpdateCell`: Right-click khi đang chơi cập nhật ô.
+  - `testOnRightClick_WhenIdle_ShouldDoNothing`: Right-click khi idle không cập nhật ô.
+
+  - Các test này sử dụng `Mockito` để mock các view component; JavaFX toolkit được khởi động trong `@BeforeAll` và một `Scene` được cung cấp trong `@BeforeEach` để tránh NPE liên quan tới Stage/Scene.
+
+---
+
+## 3. Mapping test → yêu cầu chức năng (ngắn)
+
+- UC-01 (Mở ô, flood-fill): Covered by `BoardTest.testRevealCellWithMine_*` và `testFloodFill_*`.
+- UC-02 / UC-03 / UC-04 (Đánh dấu cờ / hủy cờ / cấm mở ô cắm cờ): Covered by `BoardTest.testToggleFlag_*` và `testRevealFlaggedCell_*`.
+- UC-07 / UC-08 / UC-09 / UC-14 (New game, Pause, Resume, F2): Covered by `GameControllerTest` cases.
+- UC-11 (Win condition): Covered by `BoardTest.testCheckWin_*`.
+
+---
+
+## 4. Hướng dẫn chạy và mở rộng
+
+- Chạy toàn bộ test:
+
+```bash
+mvn test
+```
+
+- Chạy một lớp test riêng:
+
+```bash
+mvn -Dtest=com.minesweeper.controller.GameControllerTest test
+```
+
+- Ghi chú khi mở rộng test:
+  - Nếu thêm test tương tác UI JavaFX, khởi động toolkit (Platform.startup) hoặc dùng TestFX; tránh tạo `Stage` ngoài FX thread.
+  - Giữ các mock `lenient()` nếu stub dùng để tránh `UnnecessaryStubbingException` (hoặc cấu hình Mockito strictness).
+
+---
+
+## 5. Ghi chú nhỏ
+
+- File này được sinh lại từ mã kiểm thử hiện tại; nếu bạn thêm/bớt test, hãy chạy lại `mvn test` và cập nhật kế hoạch nếu cần.
