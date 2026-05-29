@@ -4,8 +4,11 @@ module com.minesweeper {
     requires transitive javafx.graphics;
     requires java.sql;
 
-    opens com.minesweeper            to javafx.graphics;
-    opens com.minesweeper.controller to javafx.graphics;
-    opens com.minesweeper.model      to javafx.graphics;
-    opens com.minesweeper.view       to javafx.graphics;
+    opens com.minesweeper.view to javafx.fxml;
+    opens com.minesweeper.controller to javafx.fxml;
+
+    exports com.minesweeper;
+    exports com.minesweeper.model;
+    exports com.minesweeper.view;
+    exports com.minesweeper.controller;
 }
