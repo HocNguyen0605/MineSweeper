@@ -1,7 +1,7 @@
-package com.minesweeper.data.model;
+package com.minesweeper.data.dao;
 
 import com.minesweeper.data.DBConnection;
-import com.minesweeper.data.dao.BoardState;
+import com.minesweeper.data.model.BoardState;
 
 import java.sql.*;
 import java.util.UUID;

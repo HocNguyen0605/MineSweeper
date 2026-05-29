@@ -1,7 +1,7 @@
-package com.minesweeper.data.model;
+package com.minesweeper.data.dao;
 
 import com.minesweeper.data.DBConnection;
-import com.minesweeper.data.dao.GameSession;
+import com.minesweeper.data.model.GameSession;
 
 
 import java.sql.*;

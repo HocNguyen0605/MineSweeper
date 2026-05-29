@@ -1,4 +1,4 @@
-package com.minesweeper.data.dao;
+package com.minesweeper.data.model;
 
 import java.time.LocalDateTime;
 

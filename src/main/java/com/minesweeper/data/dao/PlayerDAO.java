@@ -1,12 +1,10 @@
-package com.minesweeper.data.model;
+package com.minesweeper.data.dao;
 
 import com.minesweeper.data.DBConnection;
-import com.minesweeper.data.dao.Player;
+import com.minesweeper.data.model.Player;
 
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class PlayerDAO {
