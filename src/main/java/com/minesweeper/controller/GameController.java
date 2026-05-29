@@ -1,11 +1,9 @@
 package com.minesweeper.controller;
 
-import com.minesweeper.model.*;
 import com.minesweeper.model.Board;
 import com.minesweeper.model.GameState;
 import com.minesweeper.model.GameTimer;
 import com.minesweeper.model.ScoreRecord;
-import com.minesweeper.model.*;
 import com.minesweeper.view.MainView;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -33,6 +31,7 @@ public class GameController {
 
         registerViewHandlers();
         registerMenuHandlers();
+        registerResultHandlers();
     }
 
     // ── Setup ─────────────────────────────────────────────────
@@ -44,16 +43,35 @@ public class GameController {
         mainView.getHeaderView().setOnReset(this::reset);
         mainView.getHeaderView().setOnPause(this::togglePause);
         mainView.getHeaderView().setOnDifficultyChange(this::setDifficulty);
+        // UC_11: Nút High Score trên Header
+        mainView.getHeaderView().setOnHighScore(this::showHighScore);
     }
-    // Trong GameController constructor
+
     private void registerMenuHandlers() {
         mainView.getMenuView().setOnDifficultySelected(difficulty -> {
             this.difficulty = difficulty;
-            mainView.showGame(); // Hiện bàn cờ
-            newGame();           // Gọi logic tạo board của bạn
+            mainView.showGame();
+            newGame();
             mainView.getHeaderView().setDifficulty(difficulty);
         });
     }
+
+    /**
+     * Đăng ký callback khi người chơi chọn Restart hoặc Quay về Menu từ dialog kết quả
+     */
+    private void registerResultHandlers() {
+        mainView.setOnRestartRequested(this::newGame);
+        mainView.setOnMenuRequested(() -> {
+            timer.reset();
+            gameState = GameState.IDLE;
+            mainView.showMenu();
+            Platform.runLater(() -> {
+                Stage stage = (Stage) mainView.getScene().getWindow();
+                if (stage != null) stage.sizeToScene();
+            });
+        });
+    }
+
     private void bindProperties() {
         // Bind timer
         mainView.getHeaderView().bindTimer(timer.elapsedSecondsProperty());
@@ -65,6 +83,7 @@ public class GameController {
     }
 
     // ── Game Management ───────────────────────────────────────
+
     public void newGame() {
         // 1. Tạo board model trước
         board = BoardFactory.createBoard(difficulty);
@@ -109,7 +128,7 @@ public class GameController {
     }
 
     private void togglePause() {
-        if (gameState == GameState.PLAYING ) {
+        if (gameState == GameState.PLAYING) {
             gameState = GameState.PAUSED;
             timer.pause();
             mainView.setDisabled(true);
@@ -121,8 +140,17 @@ public class GameController {
             mainView.getHeaderView().setPauseEmoji(false);
         }
     }
+
+    /**
+     * Mở dialog High Score (UC_11). Không cần difficulty vừa lập kỷ lục (người dùng chủ động mở)
+     */
+    private void showHighScore() {
+        mainView.showHighScore(null);
+    }
+
     // ── Board Interaction ─────────────────────────────────────
 
+    // GameController.java
     public void onLeftClick(int row, int col) {
         if (gameState == GameState.PAUSED
                 || gameState == GameState.WIN
@@ -135,6 +163,7 @@ public class GameController {
         }
 
         boolean safe = board.revealCell(row, col);
+        // GameController.java
         // Cập nhật tất cả ô vừa được reveal (bao gồm flood-fill)
         updateChangedCells();
         mainView.getBoardView().updateCell(row, col, board.getCell(row, col));
@@ -156,9 +185,10 @@ public class GameController {
     public void onChord(int row, int col) {
         if (gameState != GameState.PLAYING) return;
         board.getLastRevealedPositions().clear();
+        // GameController.java
         boolean safe = board.chord(row, col);
-        // TODO: cập nhật lại các ô xung quanh trên View
         updateChangedCells();
+        // GameController.java
         if (!safe) handleLose(row, col);
         else if (board.checkWin()) handleWin();
     }
@@ -170,24 +200,51 @@ public class GameController {
     // ── Game Status ───────────────────────────────────────────
 
     private void handleWin() {
+        // UC_14 step 1: dừng đồng hồ
         timer.pause();
+        int elapsed = timer.getElapsedSeconds();
         gameState = GameState.WIN;
-        mainView.setDisabled(true);
+
+        // UC_14 step 2: đổi emoji → 😎
         mainView.getHeaderView().setResetEmoji("😎");
-        record.update(difficulty, timer.getElapsedSeconds());
+
+        // UC_14 step 3: khóa board
+        mainView.setDisabled(true);
+
+        // UC_14 step 4: kiểm tra và lưu high score
+        boolean isNewRecord = record.update(difficulty, elapsed);
+
+        // Cập nhật tooltip Best Time trên header
         mainView.getHeaderView().showBestTime(record.getBestTime(difficulty));
-        mainView.showResult(true);
+
+        // UC_14 step 5: hiện dialog kết quả (có badge kỷ lục mới nếu isNewRecord)
+        mainView.showResult(true, elapsed, isNewRecord);
+
+        // UC_11: nếu vừa lập kỷ lục mới, tự mở bảng High Score để highlight
+        if (isNewRecord) {
+            mainView.showHighScore(difficulty);
+        }
     }
 
     private void handleLose(int explodedRow, int explodedCol) {
-        board.revealAllMines();
+        // UC_14 step 1: dừng đồng hồ
         timer.pause();
+        int elapsed = timer.getElapsedSeconds();
+
+        board.revealAllMines();
         gameState = GameState.LOSE;
         mainView.getBoardView().revealAllMines(board, explodedRow, explodedCol);
-        mainView.setDisabled(true);
+
+        // UC_14 step 2: đổi emoji → 😵
         mainView.getHeaderView().setResetEmoji("😵");
-        mainView.showResult(false);
+
+        // UC_14 step 3: khóa board
+        mainView.setDisabled(true);
+
+        // UC_14 step 5: hiện dialog kết quả thua
+        mainView.showResult(false, elapsed, false);
     }
+
     private void updateChangedCells() {
         for (int[] pos : board.getLastRevealedPositions()) {
             mainView.getBoardView().updateCell(pos[0], pos[1], board.getCell(pos[0], pos[1]));
