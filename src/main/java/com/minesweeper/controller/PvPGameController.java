@@ -8,6 +8,7 @@ import com.minesweeper.view.PvPBoardView;
 import com.minesweeper.view.PvPSetupDialog;
 import com.minesweeper.view.GameResultView;
 
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -21,6 +22,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import com.minesweeper.data.dao.GameParticipantDAO;
+import com.minesweeper.data.dao.GameSessionDAO;
+import com.minesweeper.data.dao.PlayerDAO;
+import com.minesweeper.data.dao.ScoreRecordDAO;
+import com.minesweeper.data.model.GameParticipant;
+import com.minesweeper.data.model.GameSession;
+import com.minesweeper.data.model.Player;
+import com.minesweeper.data.model.ScoreRecord;
+import java.util.UUID;
 /**
  * Controller điều phối toàn bộ chế độ PvP cục bộ.
  * Đã sửa lỗi ẩn màn hình khi Pause: Khi đồng ý Pause, ẩn Overlay để lộ rõ bàn cờ và Header,
@@ -117,6 +127,7 @@ public class PvPGameController {
         remainP2.bind(Bindings.subtract(boardP2.getTotalMines(), boardP2.flagCountProperty()));
         pvpView.getHeaderView().bindMinesP2(remainP2);
 
+        initPvpSession();
         timerP1.start();
         timerP2.start();
         pvpView.hideOverlay();
@@ -527,6 +538,7 @@ public class PvPGameController {
     void finishMatch(int winner) {
         timerP1.pause();
         timerP2.pause();
+        savePvpResult(winner);
 
         GameResultView resultView = createGameResultView();
         GameResultView.Action action = resultView.showPvP(
@@ -552,5 +564,92 @@ public class PvPGameController {
 
     public void setOnMatchEnd(Runnable handler) {
         this.onMatchEnd = handler;
+    }
+    // ── DAO ───────────────────────────────────────────────────
+    private final PlayerDAO          playerDAO         = new PlayerDAO();
+    private final GameSessionDAO     gameSessionDAO    = new GameSessionDAO();
+    private final GameParticipantDAO participantDAO    = new GameParticipantDAO();
+    private final ScoreRecordDAO     scoreRecordDAO    = new ScoreRecordDAO();
+
+    // ID lưu lại để dùng khi insert score_record
+    private String sessionId;
+    private String participantIdP1;
+    private String participantIdP2;
+
+    private void initPvpSession() {
+        sessionId = null;
+        participantIdP1 = null;
+        participantIdP2 = null;
+
+        new Thread(() -> {
+            try {
+                // Tạo 2 Player
+                Player p1 = new Player(UUID.randomUUID().toString(), player1Name);
+                Player p2 = new Player(UUID.randomUUID().toString(), player2Name);
+                playerDAO.insert(p1);
+                playerDAO.insert(p2);
+
+                // Tạo GameSession mode PVP
+                GameSession session = new GameSession(
+                        UUID.randomUUID().toString(),
+                        "PVP",
+                        difficulty.name(),
+                        difficulty.getRows(),
+                        difficulty.getCols(),
+                        difficulty.getMines()
+                );
+                session.setStatus("playing");
+                gameSessionDAO.insert(session);
+
+                // Tạo 2 GameParticipant
+                GameParticipant gp1 = new GameParticipant(
+                        UUID.randomUUID().toString(), session.getId(), p1.getId(), 1);
+                GameParticipant gp2 = new GameParticipant(
+                        UUID.randomUUID().toString(), session.getId(), p2.getId(), 2);
+                gp1.setStatus("playing");
+                gp2.setStatus("playing");
+                participantDAO.insert(gp1);
+                participantDAO.insert(gp2);
+
+                // Lưu lại ID để dùng trong finishMatch
+                sessionId        = session.getId();
+                participantIdP1  = gp1.getId();
+                participantIdP2  = gp2.getId();
+
+            } catch (Exception e) {
+                // Lỗi DB → bỏ qua, game vẫn chạy bình thường
+                e.printStackTrace();
+            }
+        }, "pvp-session-init").start();
+    }
+    private void savePvpResult(int winner) {
+        if (sessionId == null || participantIdP1 == null || participantIdP2 == null) {
+            // Session chưa kịp khởi tạo (race condition) → bỏ qua
+            return;
+        }
+        String resultP1 = (winner == 1) ? "WIN" : (winner == 0) ? "DRAW" : "LOSE";
+        String resultP2 = (winner == 2) ? "WIN" : (winner == 0) ? "DRAW" : "LOSE";
+
+        int elapsedP1 = timerP1.getElapsedSeconds();
+        int elapsedP2 = timerP2.getElapsedSeconds();
+
+        new Thread(() -> {
+            try {
+                scoreRecordDAO.insert(new ScoreRecord(
+                        UUID.randomUUID().toString(),
+                        participantIdP1, sessionId,
+                        "PVP", difficulty.name(),
+                        elapsedP1, resultP1
+                ));
+                scoreRecordDAO.insert(new ScoreRecord(
+                        UUID.randomUUID().toString(),
+                        participantIdP2, sessionId,
+                        "PVP", difficulty.name(),
+                        elapsedP2, resultP2
+                ));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, "pvp-score-save").start();
     }
 }
