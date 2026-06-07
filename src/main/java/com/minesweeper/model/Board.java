@@ -44,7 +44,7 @@ public class Board {
     }
 
     /**
-     * [UC5.4.5] Tạo Board với mine layout định sẵn (dùng chung cho PvP).
+     * [UC5.2.5] Tạo Board với mine layout định sẵn (dùng chung cho PvP).
      * firstClick = false vì mìn đã được đặt sẵn, không cần an toàn click đầu.
      *
      * @param rows       số hàng

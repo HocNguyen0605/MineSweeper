@@ -17,10 +17,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+
 
 import com.minesweeper.data.dao.GameParticipantDAO;
 import com.minesweeper.data.dao.GameSessionDAO;
@@ -90,10 +87,9 @@ public class PvPGameController {
         int cols = difficulty.getCols();
         int mines = difficulty.getMines();
 
-        boolean[][] sharedLayout = generateMineLayout(rows, cols, mines);
-
-        boardP1 = new Board(rows, cols, mines, sharedLayout);
-        boardP2 = new Board(rows, cols, mines, sharedLayout);
+        // Mỗi board tự đặt mìn riêng khi click đầu tiên → safe-first-click cho cả 2 người chơi
+        boardP1 = new Board(rows, cols, mines);
+        boardP2 = new Board(rows, cols, mines);
 
         stateP1 = GameState.PVP_SPLIT_START;
         stateP2 = GameState.PVP_SPLIT_START;
@@ -133,21 +129,6 @@ public class PvPGameController {
         pvpView.hideOverlay();
     }
 
-    private boolean[][] generateMineLayout(int rows, int cols, int totalMines) {
-        List<int[]> allCells = new ArrayList<>(rows * cols);
-        for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++)
-                allCells.add(new int[]{r, c});
-
-        Collections.shuffle(allCells, new Random());
-
-        boolean[][] layout = new boolean[rows][cols];
-        for (int i = 0; i < totalMines; i++) {
-            int[] pos = allCells.get(i);
-            layout[pos[0]][pos[1]] = true;
-        }
-        return layout;
-    }
 
     // ── Xử lý gửi yêu cầu (Pause / Resume / Reset) ──
 
